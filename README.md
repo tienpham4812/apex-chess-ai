@@ -7,7 +7,7 @@
 [![Pure Vanilla JS](https://img.shields.io/badge/Stack-HTML5%20%7C%20CSS3%20%7C%20ES6-blue.svg)]()
 [![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-success.svg)]()
 
-🎮 **Play Online Directly in Browser**: [https://tienpham4812.github.io/apex-chess-ai/](https://tienpham4812.github.io/apex-chess-ai/)
+🎮 **Play Online Directly in Browser**:
 
 ---
 
