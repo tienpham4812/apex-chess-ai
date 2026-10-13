@@ -3,8 +3,11 @@
 > An advanced, browser-based Chess game featuring a master-strength heuristic AI engine, dynamic live evaluation bar, procedural Web Audio sound effects, and a luxury dark glassmorphic interface.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
+[![Play Online](https://img.shields.io/badge/Live%20Demo-Play%20Now-success.svg)](https://tienpham4812.github.io/apex-chess-ai/)
 [![Pure Vanilla JS](https://img.shields.io/badge/Stack-HTML5%20%7C%20CSS3%20%7C%20ES6-blue.svg)]()
 [![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-success.svg)]()
+
+🎮 **Play Online Directly in Browser**: [https://tienpham4812.github.io/apex-chess-ai/](https://tienpham4812.github.io/apex-chess-ai/)
 
 ---
 
