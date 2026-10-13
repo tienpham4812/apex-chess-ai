@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Chess AI | Play Master-Level Chess Online</title>
+  <meta name="description" content="Experience master-class chess against an advanced AI engine. Featuring dynamic evaluation bar, opening book, tactical heuristics, move history, and customizable boards.">
+  <meta name="theme-color" content="#0a0e17">
+  
+  <!-- Favicon SVG -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♞</text></svg>">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-board-theme="neon">
+
+  <!-- Application Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M19 22H5v-2h14v2M17.65 9.17l-1.42-.5C16.81 7.23 16.5 5.57 15.3 4.2 13.78 2.5 11.23 2 9 3c-1.35.6-2.38 1.74-2.8 3.12-.41 1.34-.17 2.8.65 3.94l.87 1.21-1.07.67c-1.1.7-1.8 1.9-1.9 3.2-.1 1.3.43 2.56 1.45 3.36l1.3.9V20h8v-3.7l.87-.5c1.47-.84 2.33-2.45 2.18-4.13-.15-1.68-1.2-3.1-2.9-3.5z"/>
+        </svg>
+      </div>
+      <h1 class="brand-title">Apex Chess AI</h1>
+      <span class="brand-badge">Alpha-Beta Engine</span>
+    </div>
+
+    <div class="header-actions">
+      <!-- Board Theme Selector -->
+      <select id="board-theme-select" class="custom-select" title="Change Board Theme" aria-label="Change Board Theme">
+        <option value="neon" selected>Obsidian Neon</option>
+        <option value="wood">Classic Wood</option>
+        <option value="azure">Royal Azure</option>
+        <option value="green">Tournament Green</option>
+      </select>
+
+      <!-- FEN / PGN Modal Trigger -->
+      <button id="btn-fen-pgn" class="btn-icon" title="Import / Export FEN or PGN" aria-label="FEN and PGN Tools">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+      </button>
+
+      <!-- Sound Toggle -->
+      <button id="btn-toggle-sound" class="btn-icon active" title="Toggle Sound" aria-label="Sound Toggle">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Game Layout -->
+  <main class="app-main">
+
+    <!-- Game Arena (Board + Eval Bar) -->
+    <section class="game-arena" aria-label="Chess Arena">
+      <!-- Dynamic Real-time Evaluation Bar -->
+      <div class="eval-bar-wrapper" id="eval-bar-wrapper" title="Engine Evaluation">
+        <div class="eval-fill-black" id="eval-fill-black" style="height: 50%;"></div>
+        <div class="eval-fill-white" id="eval-fill-white" style="height: 50%;"></div>
+        <div class="eval-score-tag" id="eval-score-tag">0.0</div>
+      </div>
+
+      <!-- Board & Players Container -->
+      <div class="board-container">
+        <!-- Opponent Player (AI) Card -->
+        <div class="player-card" id="opponent-card">
+          <div class="player-info">
+            <div class="player-avatar" id="opponent-avatar">🤖</div>
+            <div class="player-meta">
+              <div class="player-name-row">
+                <span class="player-name" id="opponent-name">Nova AI</span>
+                <span class="player-elo" id="opponent-elo">ELO 1600</span>
+              </div>
+              <div class="captured-tray" id="opponent-captured-tray">
+                <!-- Captured white pieces rendered here -->
+              </div>
+            </div>
+          </div>
+          <div class="player-clock" id="opponent-clock">10:00</div>
+        </div>
+
+        <!-- The 8x8 Chess Board -->
+        <div class="chess-board-wrapper">
+          <div class="chess-board" id="chess-board" role="grid" aria-label="Chess Board">
+            <!-- 64 Squares dynamically injected by app.js -->
+          </div>
+        </div>
+
+        <!-- User Player Card -->
+        <div class="player-card active-turn" id="user-card">
+          <div class="player-info">
+            <div class="player-avatar" id="user-avatar">👤</div>
+            <div class="player-meta">
+              <div class="player-name-row">
+                <span class="player-name" id="user-name">You</span>
+                <span class="player-elo" id="user-elo">Human</span>
+              </div>
+              <div class="captured-tray" id="user-captured-tray">
+                <!-- Captured black pieces rendered here -->
+              </div>
+            </div>
+          </div>
+          <div class="player-clock" id="user-clock">10:00</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sidebar Panel: Controls & Analysis -->
+    <aside class="sidebar-panel">
+
+      <!-- AI Status & Live Telemetry -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            Engine Status
+          </div>
+          <span class="ai-stats-detail" id="ai-telemetry-nodes">0 nodes</span>
+        </div>
+
+        <div class="ai-status-widget">
+          <div class="ai-status-left">
+            <span class="ai-indicator-pulse" id="ai-indicator-pulse"></span>
+            <span class="ai-status-text" id="ai-status-text">Ready for your move</span>
+          </div>
+          <span class="ai-stats-detail" id="ai-telemetry-depth">Depth 3</span>
+        </div>
+
+        <!-- Quick Primary Actions -->
+        <div class="controls-grid">
+          <button id="btn-new-game" class="btn btn-primary" title="Start a fresh match">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M3 21v-5h5"></path></svg>
+            New Game
+          </button>
+          <button id="btn-undo" class="btn" title="Undo the last turn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+            Undo Turn
+          </button>
+          <button id="btn-hint" class="btn btn-accent" title="Suggest the best move">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            Engine Hint
+          </button>
+          <button id="btn-flip" class="btn" title="Flip Board Perspective">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 4 4-4 4"></path><path d="M20 7H4"></path><path d="m8 21-4-4 4-4"></path><path d="M4 17h16"></path></svg>
+            Flip Board
+          </button>
+        </div>
+
+        <!-- Game Preferences -->
+        <div class="settings-group">
+          <div class="setting-row">
+            <span class="setting-label">AI Difficulty</span>
+            <select id="select-difficulty" class="custom-select" aria-label="AI Difficulty Level">
+              <option value="1">Level 1 - Novice (~800)</option>
+              <option value="2">Level 2 - Casual (~1200)</option>
+              <option value="3" selected>Level 3 - Intermediate (~1600)</option>
+              <option value="4">Level 4 - Master (~2000+)</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label">Play As</span>
+            <select id="select-side" class="custom-select" aria-label="Play as Side">
+              <option value="w" selected>White (First move)</option>
+              <option value="b">Black (Second move)</option>
+              <option value="spectate">Spectator (AI vs AI)</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label">Time Control</span>
+            <select id="select-time-control" class="custom-select" aria-label="Game Time Control">
+              <option value="0">Untimed Casual</option>
+              <option value="180">Bullet (3 min)</option>
+              <option value="300">Blitz (5 min)</option>
+              <option value="600" selected>Rapid (10 min)</option>
+              <option value="900">Standard (15 min)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Move Notation History Card -->
+      <div class="card move-history-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Move History
+          </div>
+          <button id="btn-export-pgn" class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">Copy PGN</button>
+        </div>
+
+        <div class="move-table-container" id="move-table-container">
+          <div id="moves-list">
+            <!-- SAN moves table generated here -->
+          </div>
+        </div>
+
+        <!-- History navigation controls -->
+        <div class="move-nav-controls">
+          <button id="nav-first" class="move-nav-btn" title="Start of game">⏮</button>
+          <button id="nav-prev" class="move-nav-btn" title="Previous move">◀</button>
+          <button id="nav-next" class="move-nav-btn" title="Next move">▶</button>
+          <button id="nav-last" class="move-nav-btn" title="Current position">⏭</button>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- Modals -->
+
+  <!-- Pawn Promotion Selection Modal -->
+  <div class="modal-overlay" id="promo-modal">
+    <div class="modal-card">
+      <div class="modal-title">Promote Your Pawn</div>
+      <p class="modal-desc">Choose a piece to replace your promoted pawn:</p>
+      <div class="promo-modal-choices" id="promo-choices-container">
+        <!-- Queen, Rook, Bishop, Knight buttons -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Result Modal -->
+  <div class="modal-overlay" id="game-over-modal">
+    <div class="modal-card">
+      <div class="modal-icon" id="game-over-icon">🏆</div>
+      <div class="modal-title" id="game-over-title">Checkmate!</div>
+      <p class="modal-desc" id="game-over-desc">White wins the match by checkmate.</p>
+      <div class="modal-actions">
+        <button id="modal-btn-new-game" class="btn btn-primary">Play Another Match</button>
+        <button id="modal-btn-close" class="btn">Review Board</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEN / PGN Import & Export Modal -->
+  <div class="modal-overlay" id="fen-pgn-modal">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-title">FEN / PGN Tools</div>
+      <p class="modal-desc">Inspect or paste custom board states (FEN) or game records (PGN):</p>
+      
+      <div style="text-align: left; margin-bottom: 0.5rem; font-size: 0.82rem; color: var(--text-muted);">Current Board FEN:</div>
+      <textarea id="fen-input" class="data-textarea" placeholder="Paste FEN here..."></textarea>
+      
+      <div class="modal-actions">
+        <button id="btn-load-fen" class="btn btn-primary">Load FEN</button>
+        <button id="btn-copy-fen" class="btn">Copy FEN</button>
+        <button id="btn-close-fen-modal" class="btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- JavaScript Scripts -->
+  <script src="js/pieces.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
